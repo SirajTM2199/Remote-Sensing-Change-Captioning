@@ -238,7 +238,7 @@ for epoch in range(0, EPOCHS):
         benchmark[epoch] = model_validation(encoder, encoder_trans, decoder, val_loader)
         print("\n")
         save_json(
-            benchmark, f"data/benchmarks/benchmark.{VERSION}.json"
+            benchmark, f"benchmarks/benchmark.{VERSION}.json"
         )
 
         if benchmark[epoch]["Bleu_1"] * 100 > MAX_SCORE:
@@ -267,18 +267,19 @@ for epoch in range(0, EPOCHS):
     print("\n")
     save_json(
         hist.tolist(),
-        f"data/benchmarks/training_history.{VERSION}.json",
+        f"benchmarks/training_history.{VERSION}.json",
     )
+    plot_loss_and_accuracy(hist,save_path=f'benchmarks/{VERSION}.png',epoch=epoch,data_loader_len=len(train_loader))
 
 # torch.save(encoder.state_dict(),f'data/Pre-Trained Models/Finetuning/encoder_{VERSION}_{epoch}.pt')
 # torch.save(encoder_trans.state_dict(),f'data/Pre-Trained Models/Finetuning/encoder_trans_{VERSION}_{epoch}.pt')
 # torch.save(decoder.state_dict(),f'data/Pre-Trained Models/Finetuning/decoder_{VERSION}_{epoch}.pt')
 
-save_json(benchmark, f"data/benchmarks/benchmark.{VERSION}.json")
+save_json(benchmark, f"benchmarks/benchmark.{VERSION}.json")
 save_json(
-    hist.tolist(), f"data/benchmarks/training_history.{VERSION}.json"
+    hist.tolist(), f"benchmarks/training_history.{VERSION}.json"
 )
-plot_metrics_over_epochs(benchmark,save_path=f'data/benchmarks/metric_over_epoch_{VERSION}.png')
+plot_metrics_over_epochs(benchmark,save_path=f'benchmarks/metric_over_epoch_{VERSION}.png')
 
 
 # To Do

@@ -38,6 +38,29 @@ def rem_print(word):
 # DATA
 word_vocab = load_json("assets/vocab_mci.json")
 
+def plot_loss_and_accuracy(hist,save_path,data_loader_len,epoch=None):
+    
+    hist = [val[:3] for val in np.array(hist) if val[0]]
+
+    x_range = len(hist)//data_loader_len if not epoch else epoch
+    x = [i for i in range(x_range)]
+    loss = [np.mean(np.array(hist)[:, 1][i:i+data_loader_len]) for i in range(0,x_range)]
+    acc = [np.mean(np.array(hist)[:, 2][i:i+data_loader_len]) for i in range(0,x_range)]
+    
+    fig,axes = plt.subplots(1,2,figsize=(10,6))
+    
+    axes[0].plot(x,loss,label='Loss',color='orange')
+    axes[0].set_xlabel("Epochs")
+    axes[0].set_ylabel("Loss")
+    axes[1].plot(x,acc,label='Top 5 Accuracy',color='red')
+    axes[1].set_xlabel("Epochs")
+    axes[1].set_ylabel("Accuracy")
+    
+    plt.tight_layout()
+
+    plt.savefig(save_path,dpi=300)
+    plt.close()
+    
 
 # Validation
 def model_validation(encoder, encoder_trans, decoder, dataloader, device):
@@ -171,6 +194,7 @@ def plot_metrics_over_epochs(metrics_dict, display=False, save_path=None):
         plt.show()
     if save_path:
         plt.savefig(save_path)
+    plt.close()
 
 def manual_preprocess(images, size=224):
     """
@@ -252,3 +276,4 @@ def manual_preprocess(images, size=224):
     else:
         # Single image
         return process_single_image(images)
+
