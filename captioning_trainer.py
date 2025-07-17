@@ -264,12 +264,13 @@ for epoch in range(0, EPOCHS):
                 f"No Improvement at epoch {epoch}, Previous Best Bleu_1: {MAX_SCORE[0]}"
             )
             Prev_Epoch = False
+            
     print("\n")
     save_json(
         hist.tolist(),
         f"benchmarks/training_history.{VERSION}.json",
     )
-    plot_loss_and_accuracy(hist,save_path=f'benchmarks/{VERSION}.png',epoch=epoch,data_loader_len=len(train_loader))
+    plot_loss_and_accuracy(hist,save_path=f'benchmarks/{VERSION}.png',epoch=epoch+1,data_loader_len=len(train_loader))
 
 # torch.save(encoder.state_dict(),f'data/Pre-Trained Models/Finetuning/encoder_{VERSION}_{epoch}.pt')
 # torch.save(encoder_trans.state_dict(),f'data/Pre-Trained Models/Finetuning/encoder_trans_{VERSION}_{epoch}.pt')
