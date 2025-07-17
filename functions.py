@@ -8,6 +8,10 @@ from eval_func.cider.cider import Cider
 from eval_func.meteor.meteor import Meteor
 
 import matplotlib.pyplot as plt
+import numpy as np
+import torchvision.transforms.functional as TF
+from PIL import Image
+
 
 
 def load_json(path):
@@ -167,3 +171,84 @@ def plot_metrics_over_epochs(metrics_dict, display=False, save_path=None):
         plt.show()
     if save_path:
         plt.savefig(save_path)
+
+def manual_preprocess(images, size=224):
+    """
+    Manual preprocessing function that replicates:
+    Resize(bicubic) -> CenterCrop -> ToTensor -> Normalize
+    (without RGB conversion)
+    
+    Args:
+        images: Single image (PIL Image, tensor, numpy array) or batch of images
+            - For batch: list of images or 4D tensor (B, C, H, W)
+        size: Target size for resize and crop (default: 224)
+    
+    Returns:
+        torch.Tensor: Preprocessed image tensor(s)
+                    - Single image: (C, H, W)
+                    - Batch: (B, C, H, W)
+    """
+    
+    def process_single_image(img):
+        # Convert to PIL Image if it's a tensor or numpy array
+        if isinstance(img, torch.Tensor):
+            if img.dim() == 3:  # Single image tensor (C, H, W)
+                img = TF.to_pil_image(img)
+            else:
+                raise ValueError(f"Unexpected tensor dimensions: {img.dim()}")
+        elif isinstance(img, np.ndarray):
+            img = Image.fromarray(img)
+        
+        # 1. Resize with bicubic interpolation
+        w, h = img.size
+        if w < h:
+            new_w = size
+            new_h = int(size * h / w)
+        else:
+            new_h = size
+            new_w = int(size * w / h)
+        
+        img = img.resize((new_w, new_h), Image.BICUBIC)
+        
+        # 2. Center Crop
+        img = TF.center_crop(img, (size, size))
+        
+        # 3. Convert to Tensor
+        tensor = TF.to_tensor(img)
+        
+        # 4. Normalize
+        mean = torch.tensor([0.48145466, 0.4578275, 0.40821073]).view(3, 1, 1)
+        std = torch.tensor([0.26862954, 0.26130258, 0.27577711]).view(3, 1, 1)
+        tensor = (tensor - mean) / std
+        
+        return tensor
+    
+    # Handle different input types
+    if isinstance(images, (list, tuple)):
+        # Batch of images as list/tuple
+        processed_batch = []
+        for img in images:
+            processed_batch.append(process_single_image(img))
+        return torch.stack(processed_batch)
+    
+    elif isinstance(images, torch.Tensor) and images.dim() == 4:
+        # Batch tensor (B, C, H, W)
+        batch_size = images.shape[0]
+        processed_batch = []
+        for i in range(batch_size):
+            single_img = images[i]
+            processed_batch.append(process_single_image(single_img))
+        return torch.stack(processed_batch)
+    
+    elif isinstance(images, np.ndarray) and images.ndim == 4:
+        # Batch numpy array (B, H, W, C) or (B, C, H, W)
+        batch_size = images.shape[0]
+        processed_batch = []
+        for i in range(batch_size):
+            single_img = images[i]
+            processed_batch.append(process_single_image(single_img))
+        return torch.stack(processed_batch)
+    
+    else:
+        # Single image
+        return process_single_image(images)

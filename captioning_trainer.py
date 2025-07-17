@@ -18,15 +18,16 @@ from utils_tool.utils import *
 from torch.utils import data
 from torch.nn.utils.rnn import pack_padded_sequence
 from clip import clip
-
+from PIL import Image
 from functions import *
 
 #Input args
 #python3 train_cap VERSION EPOCH VAL_FREQ DEVICE 
 
-VERSION,EPOCHS,VAL_FREQ,device = sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4]
+VERSION,EPOCHS,VAL_FREQ,device = sys.argv[1],int(sys.argv[2]),int(sys.argv[3]),sys.argv[4]
 
 # Functions
+print(f"VERSION:{VERSION} EPOCHS:{EPOCHS} FREQ: {VAL_FREQ} DEVICE: {device} ")
 
 
 
@@ -52,7 +53,7 @@ train_loader = data.DataLoader(
         allow_unk=1,
     ),
     batch_size=8,
-    shuffle=True, q
+    shuffle=True, 
     num_workers=36,
     pin_memory=True,
 )
@@ -140,9 +141,9 @@ encoder_trans_optimizer.zero_grad()
 # Image_store = {id:get_image(batch_data[-1],preprocess=preprocess) for id,batch_data in tqdm(enumerate(train_loader))}
 
 benchmark = {}
-MAX_SCORE = [0]
+MAX_SCORE = 0
 Prev_Epoch = False
-for epoch in range(5, EPOCHS):
+for epoch in range(0, EPOCHS):
     loss_set = []
     acc_set = []
     for id, batch_data in enumerate(train_loader):
@@ -240,8 +241,8 @@ for epoch in range(5, EPOCHS):
             benchmark, f"data/benchmarks/benchmark.{VERSION}.json"
         )
 
-        if benchmark[epoch]["Bleu_1"] * 100 > MAX_SCORE[0]:
-            MAX_SCORE[0] = benchmark[epoch]["Bleu_4"] * 100
+        if benchmark[epoch]["Bleu_1"] * 100 > MAX_SCORE:
+            MAX_SCORE = benchmark[epoch]["Bleu_1"] * 100
             print(f"\nNew Best Score: {MAX_SCORE[0]} at epoch {epoch}\n")
 
             torch.save(

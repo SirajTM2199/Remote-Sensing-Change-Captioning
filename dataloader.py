@@ -11,7 +11,8 @@ from torch.utils.data import DataLoader
 from imageio import imread
 from random import *
 from imageio import imread
-
+from PIL import Image
+from functions import *
 
 def get_image(path, preprocess):
     """
