@@ -149,7 +149,7 @@ def model_validation(encoder, encoder_trans, decoder, dataloader, device):
         # print("{} {}".format(method_i, score_i))
     score_dict = dict(zip(method, score))
 
-    get_eval_score  # score_dict = get_eval_score(references, hypotheses)
+    #get_eval_score  # score_dict = get_eval_score(references, hypotheses)
     Bleu_1 = score_dict["Bleu_1"]
     Bleu_2 = score_dict["Bleu_2"]
     Bleu_3 = score_dict["Bleu_3"]
@@ -186,7 +186,7 @@ def plot_metrics_over_epochs(metrics_dict, display=False, save_path=None):
         if m != "test_time":
             plt.plot(epochs, np.array(values[m]) * 100, marker="o", label=m)
     plt.xlabel("Epoch")
-    plt.ylabel("Score (%)")
+    plt.ylabel(f"Score (%) - Max : {sorted(values['Bleu_1'])[-1]}")
     plt.title("Evaluation Metrics over Epochs")
     plt.legend()
     plt.grid(True)

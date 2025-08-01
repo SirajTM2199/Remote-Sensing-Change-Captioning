@@ -6,3 +6,8 @@ void
 utils
 assets
 Change-Agent
+*json
+*png
+*jpg
+/home/guest/Documents/Siraj TM/Text Captioning/benchmarks
+*.out

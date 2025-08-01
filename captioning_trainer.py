@@ -81,10 +81,10 @@ decoder = DecoderTransformer(
 ).to(device)
 encoder_trans = CrossAttentiveEncoder(
     n_layers=int(layers),
-    feature_size=[7, 7, 768],
     heads=int(heads),
-    dropout=0.1,
     atten_layers=int(atten_layers),
+    feature_size=[7, 7, 768],
+    dropout=0.1,
     device=device,
 ).to(device)
 encoder = EnhancedEncoder("CLIP-ViT-B/32").to(device)
@@ -235,15 +235,16 @@ for epoch in range(0, EPOCHS):
         print(
             f"Training Epoch: {epoch} | Index:{index_i} | Mean Loss: {np.mean(loss_set)} | Mean Accuracy : {np.mean(acc_set)}\n"
         )
-        benchmark[epoch] = model_validation(encoder, encoder_trans, decoder, val_loader)
+        benchmark[epoch] = model_validation(encoder, encoder_trans, decoder, val_loader,device=device)
         print("\n")
         save_json(
             benchmark, f"benchmarks/benchmark.{VERSION}.json"
         )
+        plot_metrics_over_epochs(benchmark,save_path=f'benchmarks/metric_over_epoch_{VERSION}.png')
 
         if benchmark[epoch]["Bleu_1"] * 100 > MAX_SCORE:
             MAX_SCORE = benchmark[epoch]["Bleu_1"] * 100
-            print(f"\nNew Best Score: {MAX_SCORE[0]} at epoch {epoch}\n")
+            print(f"\nNew Best Score: {MAX_SCORE} at epoch {epoch}\n")
 
             torch.save(
                 encoder.state_dict(),
@@ -261,7 +262,7 @@ for epoch in range(0, EPOCHS):
             Prev_Epoch = True
         else:
             print(
-                f"No Improvement at epoch {epoch}, Previous Best Bleu_1: {MAX_SCORE[0]}"
+                f"No Improvement at epoch {epoch}, Previous Best Bleu_1: {MAX_SCORE}"
             )
             Prev_Epoch = False
             
@@ -271,6 +272,7 @@ for epoch in range(0, EPOCHS):
         f"benchmarks/training_history.{VERSION}.json",
     )
     plot_loss_and_accuracy(hist,save_path=f'benchmarks/{VERSION}.png',epoch=epoch+1,data_loader_len=len(train_loader))
+    
 
 # torch.save(encoder.state_dict(),f'data/Pre-Trained Models/Finetuning/encoder_{VERSION}_{epoch}.pt')
 # torch.save(encoder_trans.state_dict(),f'data/Pre-Trained Models/Finetuning/encoder_trans_{VERSION}_{epoch}.pt')
